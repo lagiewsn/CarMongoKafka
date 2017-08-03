@@ -23,7 +23,7 @@ public class User {
     String lastName;
     @JsonProperty
     String firstName;
-    @JsonProperty
+    @JsonIgnore
     List<String> cars;
 
     public User() {

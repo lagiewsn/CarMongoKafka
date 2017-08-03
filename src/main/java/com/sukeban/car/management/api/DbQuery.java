@@ -15,7 +15,7 @@ public class DbQuery {
     private static final String TOPIC_PRODUCER = "UPDATE-USER-MANAGEMENT-DB";
 
     public DbQuery() {
-        
+
         Morphia morphia = new Morphia();
         MongoClient mongoClient = new MongoClient();
         // tell Morphia where to find your classes
@@ -33,16 +33,8 @@ public class DbQuery {
         mongoProducer = new MongodbProducer(TOPIC_PRODUCER);
     }
 
-    public MongodbProducer getMongoProducer() {
-        return mongoProducer;
-    }
-
     public Datastore getDatastore() {
         return datastore;
-    }
-
-    public static String getDB_NAME() {
-        return DB_NAME;
     }
 
     public Car getCar(String carPlate) {
@@ -60,74 +52,63 @@ public class DbQuery {
 
     }
 
-    public CarStatus addCarUser(String carPlate,
-            String lastName,
-            String firstName) {
+    public CarStatus addCarUser(Car car) {
 
-        Car car = null;
-        CarStatus carStatus = null;
-        User user = null;
         String status = "Existing";
-        Query<Car> queryCar = null;
-        Query<User> queryUser = null;
-        DbQuery dbQuery = new DbQuery();
-        UpdateOperations<User> ops = null;
+        Query<User> queryUser = datastore.createQuery(User.class);
+        User user = null;
 
-        queryCar = datastore.createQuery(Car.class)
-                .field("carPlate").contains(carPlate);
-        if (queryCar.asList().isEmpty()) {
-            user = dbQuery.getUser(lastName, firstName);
-            if (user == null) {
-                dbQuery.addUser(lastName, firstName);
-                user = dbQuery.getUser(lastName, firstName);
-            }
-            car = new Car(carPlate, user);
+        UpdateOperations<User> ops = datastore.createUpdateOperations(User.class);
+
+        Query<Car> queryCar = datastore.createQuery(Car.class)
+                .field("carPlate").contains(car.getCarPlate());
+
+        if (queryCar.asList().isEmpty() && this.getUser(
+                car.getUser().getLastName(),
+                car.getUser().getFirstName()) != null) {
+
             datastore.save(car);
 
-            queryUser = datastore.createQuery(User.class);
-            ops = datastore
-                    .createUpdateOperations(User.class)
-                    .add("cars", car.getCarPlate());
+            queryUser = queryUser.field("lastName").contains(car.getUser().getLastName())
+                    .field("firstName").contains(car.getUser().getFirstName());
+
+            ops = ops.addToSet("cars", car.getCarPlate());
             datastore.update(queryUser, ops);
-            mongoProducer.produceOneEvent(dbQuery.getUser(lastName, firstName).UserAsString());
+
+            user = this.getUser(car.getUser().getLastName(), car.getUser().getFirstName());
+            mongoProducer.produceOneEvent(user.UserAsString());
             status = "Added";
         }
-        if (queryCar.asList().size() == 1) {
-            car = dbQuery.getCar(carPlate);
+        else {
+            status = "User doesn't exist";
         }
-        return carStatus = new CarStatus(car, status);
+
+        return new CarStatus(car, status);
     }
 
     public User getUser(String lastName, String firstName) {
 
         User user = null;
-        Query<User> query = null;
+        Query<User> query = datastore.createQuery(User.class)
+                .field("lastName").contains(lastName)
+                .field("firstName").contains(firstName);
 
-        query = datastore.createQuery(User.class).field("lastName").contains(lastName).field("firstName").contains(firstName);
         if (query.asList().size() == 1) {
             user = query.asList().get(0);
         }
         return user;
     }
 
-    public User addUser(String lastName, String firstName) {
+    public void addUser(User user) {
 
-        User user = null;
-        Query<User> query = null;
-        DbQuery dbQuery = new DbQuery();
-
-        query = datastore.createQuery(User.class).field("lastName")
-                .contains(lastName).field("firstName").contains(firstName);
+        Query<User> query = this.datastore.createQuery(User.class)
+                .field("lastName").contains(user.getLastName())
+                .field("firstName").contains(user.getFirstName());
 
         if (query.asList().isEmpty()) {
-            user = new User(lastName, firstName);
-            datastore.save(user);
-
-        } else {
-            user = dbQuery.getUser(lastName, firstName);
-
+            this.datastore.save(user);
+            this.mongoProducer.produceOneEvent(user.UserAsString());
         }
-
-        return user;
     }
+
 }

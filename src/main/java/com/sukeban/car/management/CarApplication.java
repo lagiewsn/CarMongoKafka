@@ -17,8 +17,7 @@ import org.mongodb.morphia.Morphia;
 
 public class CarApplication extends Application<CarConfiguration> {
 
-
-    private static final String GROUP_ID = "group1";
+    private static final String GROUP_ID = "group2";
     private static final String CONSUMER_TOPIC = "UPDATE-CAR-MANAGEMENT-DB";
 
     private static final String DB_NAME = "CAR-MANAGEMENT-DB";
@@ -39,11 +38,6 @@ public class CarApplication extends Application<CarConfiguration> {
     public void run(CarConfiguration configuration,
             Environment environment) {
 
-        /*        environment.healthChecks().register("User", new CarHealthCheck(mongoClient));
-        
-        final CarResource resource = new CarResource();
-        
-        environment.jersey().register(resource);*/
         morphia = new Morphia();
         mongoClient = new MongoClient();
 

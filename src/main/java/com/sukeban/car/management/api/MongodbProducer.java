@@ -49,8 +49,8 @@ public class MongodbProducer extends Thread {
         configProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
         configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         
-        producer = new org.apache.kafka.clients.producer.KafkaProducer<String, String>(configProperties);
-        ProducerRecord<String, String> rec = new ProducerRecord<String, String>(topicName, line);
+        producer = new org.apache.kafka.clients.producer.KafkaProducer<>(configProperties);
+        ProducerRecord<String, String> rec = new ProducerRecord<>(topicName, line);
         producer.send(rec);
         producer.close();
     }

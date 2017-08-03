@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Reference;
 
 @Entity(value = "CAR", noClassnameStored=true)
 public class Car {
@@ -21,7 +20,6 @@ public class Car {
     @JsonProperty
     String carPlate;
     @JsonProperty
-    @Reference
     private User user;
 
     public Car() {

@@ -8,6 +8,7 @@ package com.sukeban.car.management.resources;
 import com.sukeban.car.management.api.Car;
 import com.sukeban.car.management.api.CarStatus;
 import com.sukeban.car.management.api.DbQuery;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -20,7 +21,7 @@ import org.mongodb.morphia.Datastore;
 @Produces(MediaType.APPLICATION_JSON)
 public class CarResource {
 
-    private DbQuery dbQuery;
+    DbQuery dbQuery;
     Datastore datastore;
 
     public CarResource(Datastore datastore) {
@@ -37,16 +38,14 @@ public class CarResource {
         return this.dbQuery.getCar(carPlate);
 
     }
-    
 
     @POST
-    @Path("/{carPlate}/{lastName}/{firstName}")
+    @Path("add-one-car")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public CarStatus addCarUser(@PathParam("carPlate") String carPlate,
-            @PathParam("lastName") String lastName,
-            @PathParam("firstName") String firstName) {
+    public CarStatus addCarUser(Car car) {
 
-        return this.dbQuery.addCarUser(carPlate, lastName, firstName);
+        return this.dbQuery.addCarUser(car);
     }
 
 }
