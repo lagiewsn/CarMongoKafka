@@ -14,17 +14,18 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import org.mongodb.morphia.Datastore;
 
 @Path("sukeban/car/")
 @Produces(MediaType.APPLICATION_JSON)
 public class CarResource {
 
     private DbQuery dbQuery;
+    Datastore datastore;
 
-    public CarResource() {
+    public CarResource(Datastore datastore) {
 
-
-        dbQuery = new DbQuery();
+        this.dbQuery = new DbQuery(datastore);
 
     }
 
@@ -33,7 +34,7 @@ public class CarResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Car getCar(@PathParam("carPlate") String carPlate) {
 
-        return dbQuery.getCar(carPlate);
+        return this.dbQuery.getCar(carPlate);
 
     }
     
@@ -45,7 +46,7 @@ public class CarResource {
             @PathParam("lastName") String lastName,
             @PathParam("firstName") String firstName) {
 
-        return dbQuery.addCarUser(carPlate, lastName, firstName);
+        return this.dbQuery.addCarUser(carPlate, lastName, firstName);
     }
 
 }

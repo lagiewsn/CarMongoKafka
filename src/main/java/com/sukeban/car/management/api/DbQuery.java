@@ -10,15 +10,14 @@ public class DbQuery {
 
     private final MongodbProducer mongoProducer;
     private final Datastore datastore;
-    private final Morphia morphia;
-    private final MongoClient mongoClient;
+
     private static final String DB_NAME = "CAR-MANAGEMENT-DB";
-    private static final String TOPIC_PRODUCER = "UPDATE-USER";
+    private static final String TOPIC_PRODUCER = "UPDATE-USER-MANAGEMENT-DB";
 
     public DbQuery() {
         
-        morphia = new Morphia();
-        mongoClient = new MongoClient();
+        Morphia morphia = new Morphia();
+        MongoClient mongoClient = new MongoClient();
         // tell Morphia where to find your classes
         // can be called multiple times with different packages or classes
         morphia.mapPackage("com.sukeban.user.management.api");
@@ -29,20 +28,17 @@ public class DbQuery {
         mongoProducer = new MongodbProducer(TOPIC_PRODUCER);
     }
 
+    public DbQuery(Datastore datastore) {
+        this.datastore = datastore;
+        mongoProducer = new MongodbProducer(TOPIC_PRODUCER);
+    }
+
     public MongodbProducer getMongoProducer() {
         return mongoProducer;
     }
 
     public Datastore getDatastore() {
         return datastore;
-    }
-
-    public Morphia getMorphia() {
-        return morphia;
-    }
-
-    public MongoClient getMongoClient() {
-        return mongoClient;
     }
 
     public static String getDB_NAME() {

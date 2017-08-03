@@ -6,18 +6,28 @@
 package com.sukeban.car.management;
 
 import com.mongodb.MongoClient;
+import com.sukeban.car.management.api.MongodbConsumer;
 import com.sukeban.car.management.health.CarHealthCheck;
 import com.sukeban.car.management.resources.CarResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 
 public class CarApplication extends Application<CarConfiguration> {
-    
-    private final MongoClient mongoClient = new MongoClient();
+
+
+    private static final String GROUP_ID = "group1";
+    private static final String CONSUMER_TOPIC = "UPDATE-CAR-MANAGEMENT-DB";
+
+    private static final String DB_NAME = "CAR-MANAGEMENT-DB";
+    private Morphia morphia;
+    private MongoClient mongoClient;
 
     public static void main(String[] args) throws Exception {
         new CarApplication().run(args);
+        new MongodbConsumer(CONSUMER_TOPIC, GROUP_ID).start();
     }
 
     @Override
@@ -29,12 +39,21 @@ public class CarApplication extends Application<CarConfiguration> {
     public void run(CarConfiguration configuration,
             Environment environment) {
 
+        /*        environment.healthChecks().register("User", new CarHealthCheck(mongoClient));
+        
+        final CarResource resource = new CarResource();
+        
+        environment.jersey().register(resource);*/
+        morphia = new Morphia();
+        mongoClient = new MongoClient();
+
+        // create the Datastore connecting to the default port on the local host
+        final Datastore datastore = morphia.createDatastore(mongoClient, DB_NAME);
+        datastore.ensureIndexes();
 
         environment.healthChecks().register("User", new CarHealthCheck(mongoClient));
 
-        final CarResource resource = new CarResource();
-
+        final CarResource resource = new CarResource(datastore);
         environment.jersey().register(resource);
-
     }
 }
