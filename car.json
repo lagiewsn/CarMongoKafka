@@ -1,7 +1,37 @@
-{
-  "carPlate": "AA-999-AA",
-  "user": {
-    "lastName": "lagiewski",
-    "firstName": "nicolas"
+[
+  {
+    "carPlate": "AA-999-AA",
+    "user": {
+      "lastName": "lagiewski",
+      "firstName": "nicolas"
+    }
+  },
+  {
+    "carPlate": "BB-999-BB",
+    "user": {
+      "lastName": "lagiewski",
+      "firstName": "jean"
+    }
+  },
+  {
+    "carPlate": "CC-999-CC",
+    "user": {
+      "lastName": "lagiewski",
+      "firstName": "tiffany"
+    }
+  },
+  {
+    "carPlate": "DD-999-DD",
+    "user": {
+      "lastName": "lagiewski",
+      "firstName": "j-c"
+    }
+  },
+  {
+    "carPlate": "EE-999-EE",
+    "user": {
+      "lastName": "lagiewski",
+      "firstName": "alain"
+    }
   }
-}
+]

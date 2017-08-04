@@ -6,8 +6,9 @@
 package com.sukeban.car.management.resources;
 
 import com.sukeban.car.management.api.Car;
-import com.sukeban.car.management.api.CarStatus;
 import com.sukeban.car.management.api.DbQuery;
+import com.sukeban.car.management.api.Status;
+import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -43,9 +44,17 @@ public class CarResource {
     @Path("add-one-car")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public CarStatus addCarUser(Car car) {
+    public Status addCarUser(Car car) {
 
         return this.dbQuery.addCarUser(car);
     }
+    
+    @POST
+    @Path("add-multiple-car")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Status> addCarUser(List<Car> cars) {
 
+        return this.dbQuery.addMultipleCar(cars);
+    }
 }

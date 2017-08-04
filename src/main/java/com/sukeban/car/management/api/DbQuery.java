@@ -1,6 +1,9 @@
 package com.sukeban.car.management.api;
 
 import com.mongodb.MongoClient;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Query;
@@ -40,8 +43,7 @@ public class DbQuery {
     public Car getCar(String carPlate) {
 
         Car car = null;
-        Query<Car> query = null;
-        query = datastore.createQuery(Car.class)
+        Query<Car> query = datastore.createQuery(Car.class)
                 .field("carPlate").contains(carPlate);
 
         if (query.asList().size() == 1) {
@@ -52,44 +54,81 @@ public class DbQuery {
 
     }
 
-    public CarStatus addCarUser(Car car) {
+    public Status addCarUser(Car car) {
 
         String status = "Existing";
-        Query<User> queryUser = datastore.createQuery(User.class);
         User user = null;
 
-        UpdateOperations<User> ops = datastore.createUpdateOperations(User.class);
-
-        Query<Car> queryCar = datastore.createQuery(Car.class)
+        Query<Car> queryCar = this.datastore.createQuery(Car.class)
                 .field("carPlate").contains(car.getCarPlate());
 
         if (queryCar.asList().isEmpty() && this.getUser(
                 car.getUser().getLastName(),
                 car.getUser().getFirstName()) != null) {
 
-            datastore.save(car);
+            this.datastore.save(car);
 
-            queryUser = queryUser.field("lastName").contains(car.getUser().getLastName())
+            Query<User> queryUser = this.datastore.createQuery(User.class).field("lastName").contains(car.getUser().getLastName())
                     .field("firstName").contains(car.getUser().getFirstName());
 
-            ops = ops.addToSet("cars", car.getCarPlate());
-            datastore.update(queryUser, ops);
+            UpdateOperations<User> ops = this.datastore.createUpdateOperations(User.class).addToSet("cars", car.getCarPlate());
+            this.datastore.update(queryUser, ops);
 
             user = this.getUser(car.getUser().getLastName(), car.getUser().getFirstName());
-            mongoProducer.produceOneEvent(user.UserAsString());
+            this.mongoProducer.produceOneEvent(user.UserAsString());
             status = "Added";
-        }
-        else {
+        } else if (this.getUser(
+                car.getUser().getLastName(),
+                car.getUser().getFirstName()) != null) {
             status = "User doesn't exist";
         }
 
-        return new CarStatus(car, status);
+        return new Status(car, status);
+    }
+
+    public List<Status> addMultipleCar(List<Car> cars) {
+        String status = "Existing";
+
+        User user = null;
+
+        ListIterator<Car> it = cars.listIterator();
+        List<Status> listStatus = new ArrayList<>();
+
+        while (it.hasNext()) {
+
+            Car car = it.next();
+            Query<Car> queryCar = this.datastore.createQuery(Car.class).field("carPlate").contains(car.getCarPlate());
+            Query<User> queryUser = this.datastore.createQuery(User.class).field("lastName").contains(car.getUser().getLastName())
+                    .field("firstName").contains(car.getUser().getFirstName());
+
+            UpdateOperations<User> ops = this.datastore.createUpdateOperations(User.class).addToSet("cars", car.getCarPlate());
+            this.datastore.update(queryUser, ops);
+
+            if (queryCar.asList().isEmpty() && this.getUser(
+                    car.getUser().getLastName(),
+                    car.getUser().getFirstName()) != null) {
+
+                this.datastore.save(car);
+
+                user = this.getUser(car.getUser().getLastName(), car.getUser().getFirstName());
+                this.mongoProducer.produceOneEvent(user.UserAsString());
+                status = "Added";
+            } else if (this.getUser(
+                    car.getUser().getLastName(),
+                    car.getUser().getFirstName()) != null) {
+                status = "User doesn't exist";
+            }
+
+            listStatus.add(new Status(car, status));
+        }
+
+        return listStatus;
     }
 
     public User getUser(String lastName, String firstName) {
 
         User user = null;
-        Query<User> query = datastore.createQuery(User.class)
+        Query<User> query = this.datastore.createQuery(User.class)
                 .field("lastName").contains(lastName)
                 .field("firstName").contains(firstName);
 
@@ -97,18 +136,6 @@ public class DbQuery {
             user = query.asList().get(0);
         }
         return user;
-    }
-
-    public void addUser(User user) {
-
-        Query<User> query = this.datastore.createQuery(User.class)
-                .field("lastName").contains(user.getLastName())
-                .field("firstName").contains(user.getFirstName());
-
-        if (query.asList().isEmpty()) {
-            this.datastore.save(user);
-            this.mongoProducer.produceOneEvent(user.UserAsString());
-        }
     }
 
 }
