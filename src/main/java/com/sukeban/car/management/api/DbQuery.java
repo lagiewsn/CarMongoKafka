@@ -21,9 +21,6 @@ public class DbQuery {
 
         Morphia morphia = new Morphia();
         MongoClient mongoClient = new MongoClient();
-        // tell Morphia where to find your classes
-        // can be called multiple times with different packages or classes
-        morphia.mapPackage("com.sukeban.user.management.api");
 
         // create the Datastore connecting to the default port on the local host
         datastore = morphia.createDatastore(mongoClient, DB_NAME);
